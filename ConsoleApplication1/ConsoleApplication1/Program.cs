@@ -8,55 +8,62 @@ namespace ConsoleApplication1
 {
     class Program
     {
+        private static readonly Stack<int>[] piles = new Stack<int>[4] { new Stack<int>(), new Stack<int>(), new Stack<int>(), new Stack<int>() };
+
         static void Main(string[] args)
         {
             var order = args.Select(arg => int.Parse(arg));
+            piles[0] = new Stack<int>(order.Reverse());
             Console.WriteLine("Please put all cards in pile 0");
-            Sort(order.ToList(), 0, 1, 2);
+            Sort(piles[0].Count, 0, 1, 2);
         }
 
-        private static void Sort(List<int> cards, int unsorted, int lessThanOrEqual, int greaterThan)
+        private static void Sort(int size, int unsorted, int lessThanOrEqual, int greaterThan)
         {
-            if (cards.Count == 1)
+            if (size == 0)
             {
-                Move(new List<int>(), cards[0], unsorted, 4);
                 return;
             }
 
-            var ltoe = new List<int>();
-            var gt = new List<int>();
-            using (var enumerator = cards.GetEnumerator())
+            if (size == 1)
             {
-                if (!enumerator.MoveNext())
-                {
-                    ////throw new InvalidOperationException("Nothing in the pile! Something is wrong!");
-                    return;
-                }
+                Move(unsorted, 3);
+                return;
+            }
 
-                var pivot = enumerator.Current;
-                Move(ltoe, pivot, unsorted, lessThanOrEqual);
-                while (enumerator.MoveNext())
+            var gt = 0;
+            var ltoe = 1;
+            var pivot = ReadTopCard(unsorted);
+            Move(unsorted, lessThanOrEqual);
+            for (int i = 0; i < size - 1; ++i)
+            {
+                if (ReadTopCard(unsorted) > pivot)
                 {
-                    if (enumerator.Current > pivot)
-                    {
-                        Move(gt, enumerator.Current, unsorted, greaterThan);
-                    }
-                    else
-                    {
-                        Move(ltoe, enumerator.Current, unsorted, lessThanOrEqual);
-                    }
+                    ++gt;
+                    Move(unsorted, greaterThan);
+                }
+                else
+                {
+                    ++ltoe;
+                    Move(unsorted, lessThanOrEqual);
                 }
             }
 
-            Sort(Enumerable.Reverse(gt).ToList(), greaterThan, unsorted, lessThanOrEqual);
-            Sort(Enumerable.Reverse(ltoe).ToList(), lessThanOrEqual, greaterThan, unsorted);
+            Sort(gt, greaterThan, unsorted, lessThanOrEqual);
+            Sort(ltoe, lessThanOrEqual, greaterThan, unsorted);
         }
 
-        private static void Move(List<int> collection, int value, int startPile, int endPile)
+        private static void Move(int startPile, int endPile)
         {
-            collection.Add(value);
+            var value = piles[startPile].Pop();
+            piles[endPile].Push(value);
             Console.Write($"Move {value} from pile {startPile} to pile {endPile}");
             Console.ReadLine();
+        }
+
+        private static int ReadTopCard(int pile)
+        {
+            return piles[pile].Peek();
         }
     }
 }
