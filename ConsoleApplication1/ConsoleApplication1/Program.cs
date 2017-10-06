@@ -13,9 +13,14 @@ namespace ConsoleApplication1
         static void Main(string[] args)
         {
             var order = args.Select(arg => int.Parse(arg));
-            piles[0] = new Stack<int>(order.Reverse());
             Console.WriteLine("Please put all cards in pile 0");
-            Sort(piles[0].Count, 0, 1, 2);
+            var piler = new InstrumentedPiler<int>(new MemoryPiler<int>(new[] { order, Enumerable.Empty<int>(), Enumerable.Empty<int>(), Enumerable.Empty<int>() }));
+            var sorter = new Sorter<int>(piler, Comparer<int>.Default);
+            sorter.Sort();
+
+            /*piles[0] = new Stack<int>(order.Reverse());
+            Console.WriteLine("Please put all cards in pile 0");
+            Sort(piles[0].Count, 0, 1, 2);*/
         }
 
         private static void Sort(int size, int unsorted, int lessThanOrEqual, int greaterThan)
